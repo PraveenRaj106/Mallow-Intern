@@ -29,11 +29,22 @@ resource "aws_s3_bucket_acl" "bucket_acl" {
 }
 
 resource "aws_s3_object" "object" {
-    bucket = aws_s3_bucket.praveen_bucket.id
-    key    = "index.html"
-    source = "C:\\Users\\prave\\OneDrive\\Desktop\\Doc\\Terraform-1\\index.html"
-    content_type = "text/html"
-    acl = "public-read"
+    acl          = "public-read"
+    for_each = {
+        "index.html" = {
+            path          = "C:\\Users\\prave\\OneDrive\\Desktop\\Doc\\Terraform-1\\index.html"
+            content_type  = "text/html"
+        }
+        "img.jpeg" = {
+            path          = "C:\\Users\\prave\\OneDrive\\Desktop\\Doc\\Terraform-1\\Sanji.jpg"
+            content_type  = "Sanji/jpg"
+        }
+    }
+
+    bucket       = aws_s3_bucket.praveen_bucket.id
+    key          = each.key
+    source       = each.value.path
+    content_type = each.value.content_type
 }
 
 resource "aws_s3_bucket_website_configuration" "website_config" {
@@ -47,20 +58,3 @@ resource "aws_s3_bucket_website_configuration" "website_config" {
 output "website_url" {
   value = aws_s3_bucket_website_configuration.website_config.website_endpoint
 }
-
-# resource "aws_s3_bucket_policy" "bucket_policy" {
-#     bucket = aws_s3_bucket.praveen_bucket.id
-#     policy = jsonencode({
-#         Version: "2012-10-17",
-#         Statement: [
-#             {
-#                 Sid: "PublicReadGetObject",
-#                 Effect: "Allow",
-#                 Principal: "*",
-#                 Action: "s3:GetObject",
-#                 Resource: "${aws_s3_bucket.praveen_bucket.arn}/*"
-#             }
-#         ]
-#     })
-
-# }
