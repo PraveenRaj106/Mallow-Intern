@@ -1,5 +1,5 @@
 resource "aws_vpc" "my_vpc" {
-    cidr_block = "10.0.0.0/16"
+    cidr_block = var.vpc_cidr
     
     tags = {
         Name = "my-vpc"
@@ -15,16 +15,18 @@ resource "aws_internet_gateway" "my_igw" {
   
 }
 
-resource "aws_subnet" "pub_subnet_1" {
+resource "aws_subnet" "pub_subnet_1" { 
     vpc_id            = aws_vpc.my_vpc.id
     cidr_block        = "10.0.1.0/24"
-    availability_zone = "ap-south-1a"
+    availability_zone = ["ap-south-1a","ap-south-1b"]
     map_public_ip_on_launch = true
 
     tags = {
         Name = "my-public-subnet-1"
     }
 }
+
+
 
 resource "aws_subnet" "pub_subnet_2" {
     vpc_id            = aws_vpc.my_vpc.id
@@ -89,8 +91,8 @@ resource "aws_security_group" "my_sg" {
 
 # Creating EC2 instance with custom ami and user data
 resource "aws_instance" "my_instance1" {
-    ami           = "ami-054e30f060ccfb328"
-    instance_type = "t2.micro"
+    ami           = var.ami_id
+    instance_type = var.instance_type
     subnet_id     = aws_subnet.pub_subnet_1.id
     vpc_security_group_ids = [aws_security_group.my_sg.id]
     user_data     = <<-EOF
@@ -108,8 +110,8 @@ resource "aws_instance" "my_instance1" {
 }
 
 resource "aws_instance" "my_instance2" {
-    ami           = "ami-054e30f060ccfb328"
-    instance_type = "t2.micro"
+    ami           = var.ami_id
+    instance_type = var.instance_type
     subnet_id     = aws_subnet.pub_subnet_2.id
     vpc_security_group_ids = [aws_security_group.my_sg.id]
     user_data     = <<-EOF
@@ -181,9 +183,4 @@ resource "aws_lb_target_group_attachment" "instance2" {
   target_group_arn = aws_lb_target_group.my_tg.arn
   target_id        = aws_instance.my_instance2.id
   port             = 80
-}
-
-
-output "alb_dns_name" {
-    value = aws_lb.my_alb.dns_name
 }
