@@ -41,13 +41,13 @@ resource "aws_ecs_task_definition" "demo_task" {
 
 resource "aws_ecs_service" "demo_service" {
     name            = "demo-nginx"
-    cluster        = aws_ecs_cluster.demo_cluster.id
+    cluster         = aws_ecs_cluster.demo_cluster.id
     task_definition = aws_ecs_task_definition.demo_task.id
     desired_count   = var.task-count
     launch_type     = "FARGATE"
 
     network_configuration {
-        subnets          = aws_subnet.public_subnets[*].id
+        subnets          = aws_subnet.private_subnets[*].id
         security_groups  = [aws_security_group.ecs_sg.id]
         # assign_public_ip = true
     }
